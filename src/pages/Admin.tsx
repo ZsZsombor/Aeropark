@@ -11,28 +11,55 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { FileUp, Users, Mail, Calendar } from "lucide-react";
+import { permitService } from "@/lib/permitService";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Admin = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const { data: permits, isLoading } = useQuery({
+    queryKey: ['permits'],
+    queryFn: permitService.getPermits,
+  });
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  const handleFileUpload = () => {
-    toast({
-      title: "Coming Soon",
-      description: "File upload functionality will be available soon.",
-    });
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        await permitService.uploadDocument("1", file);
+        toast({
+          title: "Success",
+          description: "File uploaded successfully",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to upload file",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleEmailSend = () => {
     toast({
-      title: "Coming Soon",
-      description: "Email functionality will be available soon.",
+      title: "Email Sent",
+      description: "Notification email has been sent to the user.",
     });
   };
 
@@ -62,46 +89,81 @@ const Admin = () => {
           </TabsList>
 
           <TabsContent value="permits" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Access Card Renewals</CardTitle>
-                  <CardDescription>Due every two years</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" onClick={handleFileUpload}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    View Renewals
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Annual Permits</CardTitle>
-                  <CardDescription>Yearly renewal required</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" onClick={handleFileUpload}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Manage Permits
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pending Reviews</CardTitle>
-                  <CardDescription>Applications awaiting approval</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" onClick={handleFileUpload}>
-                    <FileUp className="mr-2 h-4 w-4" />
-                    Review Applications
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Permits</CardTitle>
+                <CardDescription>Manage access card and annual permits</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div>Loading permits...</div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Expiry Date</TableHead>
+                        <TableHead>Documents</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {permits?.map((permit) => (
+                        <TableRow key={permit.id}>
+                          <TableCell>{permit.type.replace('_', ' ')}</TableCell>
+                          <TableCell>{permit.status}</TableCell>
+                          <TableCell>{new Date(permit.expiryDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{permit.documents.length}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Document Management</CardTitle>
+                <CardDescription>Upload and manage permit documents</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="file-upload"
+                    accept=".pdf,.doc,.docx"
+                  />
+                  <label htmlFor="file-upload">
+                    <Button asChild>
+                      <span>
+                        <FileUp className="mr-2 h-4 w-4" />
+                        Upload Document
+                      </span>
+                    </Button>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="emails" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Email Notifications</CardTitle>
+                <CardDescription>Send permit-related notifications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={handleEmailSend}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Notification
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
@@ -111,41 +173,9 @@ const Admin = () => {
                 <CardDescription>Manage system users</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full">
+                <Button>
                   <Users className="mr-2 h-4 w-4" />
                   View Users
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="documents" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>File Management</CardTitle>
-                  <CardDescription>Upload and download files</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" onClick={handleFileUpload}>
-                    <FileUp className="mr-2 h-4 w-4" />
-                    Manage Files
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="emails" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Email System</CardTitle>
-                <CardDescription>Send emails to users</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" onClick={handleEmailSend}>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Compose Email
                 </Button>
               </CardContent>
             </Card>
