@@ -6,6 +6,7 @@ interface User {
   id: string;
   username: string;
   role: Role;
+  email: string;
 }
 
 interface AuthState {
@@ -16,8 +17,8 @@ interface AuthState {
 
 // Mock users for demo
 const MOCK_USERS = [
-  { id: '1', username: 'admin', password: 'admin123', role: 'admin' as Role },
-  { id: '2', username: 'user', password: 'user123', role: 'user' as Role },
+  { id: '1', username: 'admin', password: 'admin123', role: 'admin' as Role, email: 'admin@example.com' },
+  { id: '2', username: 'user', password: 'user123', role: 'user' as Role, email: 'user@example.com' },
 ];
 
 export const useAuth = create<AuthState>((set) => ({
