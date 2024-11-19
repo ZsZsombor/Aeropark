@@ -10,8 +10,8 @@ class PermitController extends Controller
 {
     public function index()
     {
-        $permits = auth()->user()->permits()->with('documents')->get();
-        return response()->json($permits);
+        $permits = auth()->user()->permits()->with('documents')->latest()->get();
+        return view('permits.index', compact('permits'));
     }
 
     public function store(Request $request)
@@ -21,22 +21,12 @@ class PermitController extends Controller
             'expiry_date' => 'required|date',
         ]);
 
-        $permit = auth()->user()->permits()->create([
+        auth()->user()->permits()->create([
             ...$validated,
             'status' => 'pending',
         ]);
 
-        return response()->json($permit, 201);
-    }
-
-    public function update(Request $request, Permit $permit)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,approved,rejected',
-        ]);
-
-        $permit->update($validated);
-        return response()->json($permit);
+        return back()->with('success', 'Permit request submitted successfully');
     }
 
     public function uploadDocument(Request $request, Permit $permit)
@@ -47,12 +37,12 @@ class PermitController extends Controller
 
         $path = $request->file('document')->store('documents');
         
-        $document = $permit->documents()->create([
+        $permit->documents()->create([
             'name' => $request->file('document')->getClientOriginalName(),
             'type' => $request->file('document')->getMimeType(),
             'url' => Storage::url($path),
         ]);
 
-        return response()->json($document, 201);
+        return back()->with('success', 'Document uploaded successfully');
     }
 }
