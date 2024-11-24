@@ -69,6 +69,7 @@
                         <a href="{{ route('permits.index') }}" class="py-4 px-2 text-foreground hover:text-primary transition-colors">My Permits</a>
                         @if(auth()->user()->role === 'admin')
                             <a href="{{ route('admin.permits') }}" class="py-4 px-2 text-foreground hover:text-primary transition-colors">Admin Dashboard</a>
+                            <a href="{{ route('admin.users.index') }}" class="py-4 px-2 text-foreground hover:text-primary transition-colors">User Management</a>
                         @endif
                     @endauth
                 </div>
