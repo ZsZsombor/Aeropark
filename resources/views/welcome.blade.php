@@ -5,9 +5,9 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-body">
-                    <h1 class="card-title text-center">Welcome to the Permits System</h1>
-                    <p class="text-center">Please login to manage your permits.</p>
+                <div class="card-body text-center">
+                    <h1 class="card-title">Welcome to the Permits System</h1>
+                    <p class="lead">Please login to manage your permits.</p>
                 </div>
             </div>
         </div>
