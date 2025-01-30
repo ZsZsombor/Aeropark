@@ -1,35 +1,34 @@
 <?php
 
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PermitController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('welcome');
-})->name('home');
-
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
 });
+
 
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    
-    Route::get('/permits', [PermitController::class, 'index'])->name('permits.index');
-    Route::post('/permits', [PermitController::class, 'store'])->name('permits.store');
-    Route::post('/permits/{permit}/documents', [PermitController::class, 'uploadDocument'])->name('permits.upload-document');
-    
-    Route::middleware('admin')->group(function () {
-        Route::get('/admin/permits', [AdminController::class, 'index'])->name('admin.permits');
-        Route::patch('/admin/permits/{permit}', [AdminController::class, 'update'])->name('admin.permits.update');
-        
-        // New user management routes
-        Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users.index');
-        Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
-        Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
-        Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
-    });
+
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        return view('dashboard', compact('user'));
+    })->name('dashboard');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/{user}/documents', [DocumentController::class, 'showUploadedDocuments'])->name('user.documents');
+    Route::post('/{user}/documents', [DocumentController::class, 'store'])->name('user.documents.store');
+    Route::delete('users/{user}/documents/{document}', [DocumentController::class, 'destroy'])->name('user.documents.destroy');
+
+
 });
+
+
+require __DIR__ . '/auth.php';
+
+require __DIR__ . '/admin-auth.php';

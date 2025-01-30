@@ -1,34 +1,43 @@
-@extends('layouts.app')
+<section class="container d-flex justify-content-center align-items-start min-vh-100 mt-5">
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h1 class="card-title mb-4">Login</h1>
+    <div class="card shadow-lg p-4 w-100" style="max-width: 400px;">
+        <h3 class="text-center mb-3">Login as User</h3>
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
 
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror">
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </form>
-                </div>
+            <!-- Email Address -->
+            <div class="mb-3">
+                <x-input-label for="email" :value="__('Email')" />
+                <x-text-input id="email" class="form-control" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-input-error :messages="$errors->get('email')" class="mt-2 text-danger" />
             </div>
-        </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <x-input-label for="password" :value="__('Password')" />
+                <x-text-input id="password" class="form-control" type="password" name="password" required autocomplete="current-password" />
+                <x-input-error :messages="$errors->get('password')" class="mt-2 text-danger" />
+            </div>
+
+            <!-- Remember Me -->
+            <div class="form-check mb-3">
+                <input id="remember_me" type="checkbox" class="form-check-input" name="remember">
+                <label for="remember_me" class="form-check-label text-muted">{{ __('Remember me') }}</label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                @if (Route::has('password.request'))
+                    <a class="text-decoration-none text-muted" href="{{ route('password.request') }}">
+                        {{ __('Forgot your password?') }}
+                    </a>
+                @endif
+
+                <x-primary-button class="btn btn-primary">
+                    {{ __('Log in') }}
+                </x-primary-button>
+            </div>
+        </form>
     </div>
-</div>
-@endsection
+</section>
